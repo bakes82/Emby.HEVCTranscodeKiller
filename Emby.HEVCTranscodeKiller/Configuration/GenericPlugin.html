@@ -1,0 +1,89 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Generic Plugin</title>
+</head>
+<body>
+<div class="type-interior pluginConfigurationPage GenericPluginConfigurationPage"
+     data-controller="__plugin/GenericPluginConfigurationPageJS"
+     data-require="emby-button,emby-input,emby-select,emby-toggle"
+     data-role="page"
+     style="align-items: center; margin: auto;">
+    <div data-role="content">
+        <div class="content-primary">
+            <form class="PluginForm">
+                <h3 style="margin: .6em 0; vertical-align: middle; display: inline-block;">
+                    HEVC TransCode Killer
+                </h3>
+                <!-- Audio Start -->
+                <div class="inputContainer">
+                    <label class="mdl-switch mdl-js-switch" style="width: auto;">
+                        <input class="chkEnableAudioKilling" data-embytoggle="" id="enableAudioKilling" is="emby-toggle"
+                               type="checkbox">
+                        <span class="toggleButtonLabel mdl-switch__label">Enable HEVC Transcode Audio Killing</span>
+                        <div class="mdl-switch__trackContainer">
+                            <div class="mdl-switch__track"></div>
+                            <div class="mdl-switch__thumb">
+                                <span class="mdl-switch__focus-helper"></span>
+                            </div>
+                        </div>
+                    </label>
+                    <div class="fieldDescription">
+                        Prevent HEVC files from transcoding audio.
+                    </div>
+                </div>
+                <!-- Audio End -->
+
+                <!-- Video Start -->
+                <div class="inputContainer">
+                    <label class="mdl-switch mdl-js-switch" style="width: auto;">
+                        <input class="chkEnableVideoKilling" data-embytoggle="" id="enableVideoKilling" is="emby-toggle"
+                               type="checkbox">
+                        <span class="toggleButtonLabel mdl-switch__label">Enable HEVC Transcode Video Killing</span>
+                        <div class="mdl-switch__trackContainer">
+                            <div class="mdl-switch__track"></div>
+                            <div class="mdl-switch__thumb">
+                                <span class="mdl-switch__focus-helper"></span>
+                            </div>
+                        </div>
+                    </label>
+                    <div class="fieldDescription">
+                        Prevent HEVC files from transcoding video.
+                    </div>
+                </div>
+                <!-- Video End -->
+
+                <!-- Message Both Start -->
+                <div class="inputContainer">
+                    <input class="txtBothMessage" data-embyinput="" id="customBothMessage" is="emby-input" type="text">
+                    <div class="fieldDescription">
+                        Message to be shown when both audio and video is disabled.
+                    </div>
+                </div>
+                <!-- Message Both End -->
+
+                <!-- Message Video Only Start -->
+                <div class="inputContainer">
+                    <input class="txtVideoMessage" data-embyinput="" id="customVideoMessage" is="emby-input"
+                           type="text">
+                    <div class="fieldDescription">
+                        Message to be shown when only video is disabled.
+                    </div>
+                </div>
+                <!-- Message Video Only End -->
+
+                <!-- Message Audio Only Start -->
+                <div class="inputContainer">
+                    <input class="txtAudioMessage" data-embyinput="" id="customAudioMessage" is="emby-input"
+                           type="text">
+                    <div class="fieldDescription">
+                        Message to be shown when only audio is disabled.
+                    </div>
+                </div>
+                <!-- Message Audio Only End -->
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
