@@ -9,8 +9,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="Configuration\GenericPlugin.html" />
-        <EmbeddedResource Include="Configuration\GenericPlugin.js" />
+        <EmbeddedResource Include="Configuration\EmbyHEVCTranscodeKiller.html" />
+        <EmbeddedResource Include="Configuration\EmbyHEVCTranscodeKiller.js" />
         <EmbeddedResource Include="logo.png" />
     </ItemGroup>
 

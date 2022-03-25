@@ -42,15 +42,15 @@ namespace Emby.HEVCTranscodeKiller
                    {
                        new PluginPageInfo
                        {
-                           Name = "GenericPluginConfigurationPage",
+                           Name = "EmbyHEVCTranscodeKillerConfigurationPage",
                            EmbeddedResourcePath = GetType()
-                               .Namespace + ".Configuration.GenericPlugin.html"
+                               .Namespace + ".Configuration.EmbyHEVCTranscodeKiller.html"
                        },
                        new PluginPageInfo
                        {
-                           Name = "GenericPluginConfigurationPageJS",
+                           Name = "EmbyHEVCTranscodeKillerConfigurationPageJS",
                            EmbeddedResourcePath = GetType()
-                               .Namespace + ".Configuration.GenericPlugin.js"
+                               .Namespace + ".Configuration.EmbyHEVCTranscodeKiller.js"
                        }
                    };
         }
