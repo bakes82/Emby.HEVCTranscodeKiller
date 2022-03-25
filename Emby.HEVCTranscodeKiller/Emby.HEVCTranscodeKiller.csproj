@@ -9,14 +9,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="Configuration\GenericPlugin.html"/>
-        <EmbeddedResource Include="Configuration\GenericPlugin.js"/>
-        <EmbeddedResource Include="logo.png"/>
+        <EmbeddedResource Include="Configuration\GenericPlugin.html" />
+        <EmbeddedResource Include="Configuration\GenericPlugin.js" />
+        <EmbeddedResource Include="logo.png" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="MediaBrowser.Server.Core" Version="4.6.0.50"/>
-        <PackageReference Include="System.Memory" Version="4.5.4"/>
+        <PackageReference Include="MediaBrowser.Server.Core" Version="4.6.0.50" />
+        <PackageReference Include="System.Memory" Version="4.5.4" />
     </ItemGroup>
 
 </Project>

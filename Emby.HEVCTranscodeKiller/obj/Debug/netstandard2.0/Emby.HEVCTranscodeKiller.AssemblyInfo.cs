@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Emby.HEVCTranscodeKiller")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0.0")]
 [assembly: System.Reflection.AssemblyProductAttribute("Emby.HEVCTranscodeKiller")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Emby.HEVCTranscodeKiller")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
