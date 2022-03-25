@@ -1,9 +1,0 @@
-F:\Emby.HVECTranscodeKiller\Emby.HVECTranscodeKiller\bin\Debug\netstandard2.0\Emby.HVECTranscodeKiller.deps.json
-F:\Emby.HVECTranscodeKiller\Emby.HVECTranscodeKiller\bin\Debug\netstandard2.0\Emby.HVECTranscodeKiller.dll
-F:\Emby.HVECTranscodeKiller\Emby.HVECTranscodeKiller\bin\Debug\netstandard2.0\Emby.HVECTranscodeKiller.pdb
-F:\Emby.HVECTranscodeKiller\Emby.HVECTranscodeKiller\obj\Debug\netstandard2.0\Emby.HVECTranscodeKiller.csprojAssemblyReference.cache
-F:\Emby.HVECTranscodeKiller\Emby.HVECTranscodeKiller\obj\Debug\netstandard2.0\Emby.HVECTranscodeKiller.AssemblyInfoInputs.cache
-F:\Emby.HVECTranscodeKiller\Emby.HVECTranscodeKiller\obj\Debug\netstandard2.0\Emby.HVECTranscodeKiller.AssemblyInfo.cs
-F:\Emby.HVECTranscodeKiller\Emby.HVECTranscodeKiller\obj\Debug\netstandard2.0\Emby.HVECTranscodeKiller.csproj.CoreCompileInputs.cache
-F:\Emby.HVECTranscodeKiller\Emby.HVECTranscodeKiller\obj\Debug\netstandard2.0\Emby.HVECTranscodeKiller.dll
-F:\Emby.HVECTranscodeKiller\Emby.HVECTranscodeKiller\obj\Debug\netstandard2.0\Emby.HVECTranscodeKiller.pdb

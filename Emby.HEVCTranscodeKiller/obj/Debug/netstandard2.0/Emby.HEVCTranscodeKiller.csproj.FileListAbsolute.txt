@@ -1,9 +1,0 @@
-F:\Emby.HEVCTranscodeKiller\Emby.HEVCTranscodeKiller\bin\Debug\netstandard2.0\Emby.HEVCTranscodeKiller.deps.json
-F:\Emby.HEVCTranscodeKiller\Emby.HEVCTranscodeKiller\bin\Debug\netstandard2.0\Emby.HEVCTranscodeKiller.dll
-F:\Emby.HEVCTranscodeKiller\Emby.HEVCTranscodeKiller\bin\Debug\netstandard2.0\Emby.HEVCTranscodeKiller.pdb
-F:\Emby.HEVCTranscodeKiller\Emby.HEVCTranscodeKiller\obj\Debug\netstandard2.0\Emby.HEVCTranscodeKiller.csprojAssemblyReference.cache
-F:\Emby.HEVCTranscodeKiller\Emby.HEVCTranscodeKiller\obj\Debug\netstandard2.0\Emby.HEVCTranscodeKiller.AssemblyInfoInputs.cache
-F:\Emby.HEVCTranscodeKiller\Emby.HEVCTranscodeKiller\obj\Debug\netstandard2.0\Emby.HEVCTranscodeKiller.AssemblyInfo.cs
-F:\Emby.HEVCTranscodeKiller\Emby.HEVCTranscodeKiller\obj\Debug\netstandard2.0\Emby.HEVCTranscodeKiller.csproj.CoreCompileInputs.cache
-F:\Emby.HEVCTranscodeKiller\Emby.HEVCTranscodeKiller\obj\Debug\netstandard2.0\Emby.HEVCTranscodeKiller.dll
-F:\Emby.HEVCTranscodeKiller\Emby.HEVCTranscodeKiller\obj\Debug\netstandard2.0\Emby.HEVCTranscodeKiller.pdb
