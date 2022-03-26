@@ -12,16 +12,23 @@
                     var msgVideo = view.querySelector('#customVideoMessage');
                     var msgAudio = view.querySelector('#customAudioMessage');
 
+                    var excludedFolders = [];
+                    var distinctLibraries = [];
+
                     ApiClient.getPluginConfiguration(pluginId).then((config) => {
                         chkAudioKill.checked = config.EnableKillingOfAudio ?? false;
                         chkVideoKill.checked = config.EnableKillingOfVideo ?? false;
+
+                        if (config.ExcludedLibraries !== undefined && config.ExcludedLibraries !== null && config.ExcludedLibraries !== []) {
+                            excludedFolders = config.ExcludedLibraries;
+                        }
 
                         if (config.MessageForBoth === null || config.MessageForBoth === undefined) {
                             msgBoth.value = "Transcoding of video & audio is prohibited.";
                         } else {
                             msgBoth.value = config.MessageForBoth;
                         }
-                        
+
                         if (config.MessageForAudioOnly === null || config.MessageForAudioOnly === undefined) {
                             msgAudio.value = "Transcoding of audio is prohibited.";
                         } else {
@@ -34,6 +41,8 @@
                             msgVideo.value = config.MessageForVideoOnly;
                         }
                     });
+
+                    loadFolders();
 
                     chkAudioKill.addEventListener('change', (elem) => {
                         elem.preventDefault();
@@ -104,6 +113,71 @@
                             });
                         });
                     }
+
+                    function loadFolders() {
+                        ApiClient.getVirtualFolders().then((folders) => {
+                            var html = "";
+                            html += '<div data-role="controlgroup">';
+
+                            folders.Items.forEach(function (item, index) {
+                                console.log(item);
+                                html += getFolderHtml(item, index);
+                            });
+
+                            html += '</div>';
+                            console.log(html);
+                            document.getElementById("divExcludeLocations").innerHTML = html;
+
+                            var excluededCheckboxes = document.getElementsByClassName("chkExcludeLibrary");
+                            for (var i = 0; i < excluededCheckboxes.length; i++) {
+                                excluededCheckboxes[i].addEventListener('click', excludeLibrary, false);
+                            }
+                        });
+
+                    }
+
+                    function getFolderHtml(virtualFolder, index) {
+                        console.log(virtualFolder);
+                        var html = "";
+                        for (var i = 0, length = virtualFolder.Locations.length; i < length; i++) {
+                            var id = "chkFolder" + index + "_" + i;
+                            var location = virtualFolder.Locations[i];
+                            if (distinctLibraries.includes(location)) {
+                                continue;
+                            } else {
+                                distinctLibraries.push(location);
+                            }
+                            var isChecked = excludedFolders.includes(location);
+                            var checkedAttribute = isChecked ? 'checked="checked"' : "";
+                            html += '<label><input is="emby-checkbox" class="chkExcludeLibrary" type="checkbox" data-mini="true" id="' + id + '" name="' + id + '" data-location="' + location + '" ' + checkedAttribute + ' /><span>' + location + '</span></label>';
+                        }
+                        return html;
+                    }
+
+                    function excludeLibrary() {
+                        var value = this.getAttribute("data-location");
+                        console.log(value);
+                        ApiClient.getPluginConfiguration(pluginId).then((config) => {
+                            if (config.ExcludedLibraries !== null && config.ExcludedLibraries !== undefined && config.ExcludedLibraries.includes(value)) {
+                                config.ExcludedLibraries = removeItemOnce(config.ExcludedLibraries, value);
+                            } else {
+                                if (config.ExcludedLibraries === null || config.ExcludedLibraries === undefined) {
+                                    config.ExcludedLibraries = [];
+                                }
+                                config.ExcludedLibraries.push(value);
+                            }
+                            ApiClient.updatePluginConfiguration(pluginId, config).then(() => {
+                            });
+                        });
+                    }
                 });
+
+            function removeItemOnce(arr, value) {
+                var index = arr.indexOf(value);
+                if (index > -1) {
+                    arr.splice(index, 1);
+                }
+                return arr;
+            }
         }
     });

@@ -67,13 +67,21 @@ namespace Emby.HEVCTranscodeKiller
             Log.Info($"Kill Audio: {Plugin.Instance.Configuration.EnableKillingOfAudio}, Kill Video: {Plugin.Instance.Configuration.EnableKillingOfVideo}");
             if (e.Session.TranscodingInfo != null)
             {
-                Log.Info($"MediaSourceID: {e.MediaSourceId}");
-
                 var mediaSourceItem = e.Session.FullNowPlayingItem.GetMediaSources(false, false, new LibraryOptions())
                                        .SingleOrDefault(x => string.Equals(x.Id, e.MediaSourceId,
                                                                            StringComparison.OrdinalIgnoreCase));
 
                 if (mediaSourceItem == null) return;
+
+                if (Plugin.Instance.Configuration.ExcludedLibraries != null &&
+                    Plugin.Instance.Configuration.ExcludedLibraries.Any())
+                    foreach (var excludedLibrary in Plugin.Instance.Configuration.ExcludedLibraries)
+                        if (mediaSourceItem.Path.ToLower()
+                                           .Contains(excludedLibrary.ToLower()))
+                        {
+                            Log.Info($"File in excluded directory {excludedLibrary} : {mediaSourceItem.Path} ignored killing.");
+                            return;
+                        }
 
                 Log.Info($"Is Direct Audio: {e.Session.TranscodingInfo.IsAudioDirect}, Is Direct Video: {e.Session.TranscodingInfo.IsVideoDirect}, Video Codec: {mediaSourceItem.VideoStream.Codec}");
 

@@ -12,7 +12,7 @@ namespace Emby.HEVCTranscodeKiller
 {
     public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages, IHasThumbImage
     {
-        private readonly Guid _id = new Guid("B433A70D-0DDB-47C6-B08A-45F8614AAAB2");
+        private readonly Guid _id = new("B433A70D-0DDB-47C6-B08A-45F8614AAAB2");
 
         public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer) : base(applicationPaths,
          xmlSerializer)

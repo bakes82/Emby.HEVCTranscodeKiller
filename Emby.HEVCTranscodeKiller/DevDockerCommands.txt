@@ -1,7 +1,6 @@
 ﻿docker exec -it <dockerid> /bin/bash
 
-rm /app/emby/plugins/Emby.HVECTranscodeKiller.dll
-cp /media/Emby.HVECTranscodeKiller.dll /app/emby/plugins/
-chmod 777 Emby.HVECTranscodeKiller.dll
-
-delete file from /config/plugins
+rm /app/emby/plugins/Emby.HEVCTranscodeKiller.dll
+rm /config/plugins/Emby.HEVCTranscodeKiller.dll
+cp /media/Emby.HEVCTranscodeKiller.dll /app/emby/plugins/
+chmod 777 /app/emby/plugins/Emby.HEVCTranscodeKiller.dll
