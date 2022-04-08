@@ -53,6 +53,28 @@
                 </div>
                 <!-- Video End -->
 
+                <!-- Paused Video Start -->
+                <div class="inputContainer">
+                    <label class="mdl-switch mdl-js-switch" style="width: auto;">
+                        <input class="chkEnablePausedVideoKilling" data-embytoggle="" id="enablePausedVideoKilling"
+                               is="emby-toggle"
+                               type="checkbox">
+                        <span class="toggleButtonLabel mdl-switch__label">Enable Killing Paused Videos</span>
+                        <div class="mdl-switch__trackContainer">
+                            <div class="mdl-switch__track"></div>
+                            <div class="mdl-switch__thumb">
+                                <span class="mdl-switch__focus-helper"></span>
+                            </div>
+                        </div>
+                    </label>
+                    <input class="txtPausedDuration" data-embyinput="" id="pausedDurationMin" is="emby-input"
+                           min="1" type="number">
+                    <div class="fieldDescription">
+                        Prevent paused videos from sitting idle for too long.
+                    </div>
+                </div>
+                <!-- PausedVideo End -->
+
                 <!-- Exclude Folders Start -->
                 <div class="inputContainer">
                     <h3 class="checkboxListLabel">Exclude folders:</h3>
@@ -89,6 +111,16 @@
                     </div>
                 </div>
                 <!-- Message Audio Only End -->
+
+                <!-- Message Paused Video Start -->
+                <div class="inputContainer">
+                    <input class="txtPausedMessage" data-embyinput="" id="customPausedMessage" is="emby-input"
+                           type="text">
+                    <div class="fieldDescription">
+                        Message to be shown when video is paused too long.
+                    </div>
+                </div>
+                <!-- Message Paused Video End -->
             </form>
         </div>
     </div>

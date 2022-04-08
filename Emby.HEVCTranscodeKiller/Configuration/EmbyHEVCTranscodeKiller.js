@@ -12,12 +12,19 @@
                     var msgVideo = view.querySelector('#customVideoMessage');
                     var msgAudio = view.querySelector('#customAudioMessage');
 
+                    var ckhEnablePause = view.querySelector('#enablePausedVideoKilling');
+                    var msgPause = view.querySelector('#customPausedMessage');
+                    var pauseTime = view.querySelector('#pausedDurationMin');
+
                     var excludedFolders = [];
                     var distinctLibraries = [];
 
                     ApiClient.getPluginConfiguration(pluginId).then((config) => {
                         chkAudioKill.checked = config.EnableKillingOfAudio ?? false;
                         chkVideoKill.checked = config.EnableKillingOfVideo ?? false;
+                        ckhEnablePause.checked = config.EnableKillingOfPausedVideo ?? false;
+
+                        pauseTime.value = config.PausedDuration ?? 5;
 
                         if (config.ExcludedLibraries !== undefined && config.ExcludedLibraries !== null && config.ExcludedLibraries !== []) {
                             excludedFolders = config.ExcludedLibraries;
@@ -40,9 +47,21 @@
                         } else {
                             msgVideo.value = config.MessageForVideoOnly;
                         }
+
+                        if (config.MessageForPausedVideo === null || config.MessageForPausedVideo === undefined) {
+                            msgPause.value = "Video paused too long.";
+                        } else {
+                            msgPause.value = config.MessageForPausedVideo;
+                        }
                     });
 
                     loadFolders();
+
+                    ckhEnablePause.addEventListener('change', (elem) => {
+                        elem.preventDefault();
+                        var value = ckhEnablePause.checked;
+                        EnablePauseKilling(value);
+                    });
 
                     chkAudioKill.addEventListener('change', (elem) => {
                         elem.preventDefault();
@@ -74,6 +93,18 @@
                         SetAudioMessage(value);
                     });
 
+                    msgPause.addEventListener('change', (elem) => {
+                        elem.preventDefault();
+                        var value = msgPause.value;
+                        SetPausedMessage(value);
+                    });
+
+                    pauseTime.addEventListener('change', (elem) => {
+                        elem.preventDefault();
+                        var value = pauseTime.value;
+                        SetPausedTime(value);
+                    });
+
                     function EnableAudioKilling(value) {
                         ApiClient.getPluginConfiguration(pluginId).then((config) => {
                             config.EnableKillingOfAudio = value;
@@ -85,6 +116,14 @@
                     function EnableVideoKilling(value) {
                         ApiClient.getPluginConfiguration(pluginId).then((config) => {
                             config.EnableKillingOfVideo = value;
+                            ApiClient.updatePluginConfiguration(pluginId, config).then(() => {
+                            });
+                        });
+                    }
+
+                    function EnablePauseKilling(value) {
+                        ApiClient.getPluginConfiguration(pluginId).then((config) => {
+                            config.EnableKillingOfPausedVideo = value;
                             ApiClient.updatePluginConfiguration(pluginId, config).then(() => {
                             });
                         });
@@ -109,6 +148,22 @@
                     function SetAudioMessage(value) {
                         ApiClient.getPluginConfiguration(pluginId).then((config) => {
                             config.MessageForAudioOnly = value;
+                            ApiClient.updatePluginConfiguration(pluginId, config).then(() => {
+                            });
+                        });
+                    }
+
+                    function SetPausedMessage(value) {
+                        ApiClient.getPluginConfiguration(pluginId).then((config) => {
+                            config.MessageForPausedVideo = value;
+                            ApiClient.updatePluginConfiguration(pluginId, config).then(() => {
+                            });
+                        });
+                    }
+
+                    function SetPausedTime(value) {
+                        ApiClient.getPluginConfiguration(pluginId).then((config) => {
+                            config.PausedDuration = value;
                             ApiClient.updatePluginConfiguration(pluginId, config).then(() => {
                             });
                         });

@@ -64,6 +64,17 @@ namespace Emby.HEVCTranscodeKiller
         /// <param name="e"></param>
         private void PlaybackProgress(object sender, PlaybackProgressEventArgs e)
         {
+            Log.Info($"In PlaybackProgress - Is Object Pause {e.IsPaused}");
+            if (e.IsPaused && Plugin.Instance.Configuration.EnableKillingOfPausedVideo)
+            {
+                PausedSessionHelper.AddSessionToList(e.Session.Id, Log);
+
+                var sessionsToKill = PausedSessionHelper.GetSessionsToKill();
+
+                foreach (var pausedSession in sessionsToKill)
+                    StopAndSendMessage(pausedSession.SessionId, Plugin.Instance.Configuration.MessageForPausedVideo);
+            }
+
             Log.Info($"Kill Audio: {Plugin.Instance.Configuration.EnableKillingOfAudio}, Kill Video: {Plugin.Instance.Configuration.EnableKillingOfVideo}");
             if (e.Session.TranscodingInfo != null)
             {
@@ -152,6 +163,7 @@ namespace Emby.HEVCTranscodeKiller
         /// <param name="e"></param>
         private void PlaybackStopped(object sender, PlaybackStopEventArgs e)
         {
+            PausedSessionHelper.RemoveSessionFromList(e.Session.Id);
         }
     }
 }
