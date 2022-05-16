@@ -12,6 +12,15 @@
                     var msgVideo = view.querySelector('#customVideoMessage');
                     var msgAudio = view.querySelector('#customAudioMessage');
 
+                    var msgBothNags = view.querySelector('#customBothMessageNags');
+                    var msgVideoNags = view.querySelector('#customVideoMessageNags');
+                    var msgAudioNags = view.querySelector('#customAudioMessageNags');
+
+                    var nagTime = view.querySelector('#nagMin');
+
+                    var chkAudioNag = view.querySelector('#enableAudioNag');
+                    var chkVideoNag = view.querySelector('#enableVideoNag');
+
                     var ckhEnablePause = view.querySelector('#enablePausedVideoKilling');
                     var msgPause = view.querySelector('#customPausedMessage');
                     var pauseTime = view.querySelector('#pausedDurationMin');
@@ -23,8 +32,11 @@
                         chkAudioKill.checked = config.EnableKillingOfAudio ?? false;
                         chkVideoKill.checked = config.EnableKillingOfVideo ?? false;
                         ckhEnablePause.checked = config.EnableKillingOfPausedVideo ?? false;
+                        chkAudioNag.checked = config.EnableAudioTranscodeNags ?? false;
+                        chkVideoNag.checked = config.EnableVideoTranscodeNags ?? false;
 
-                        pauseTime.value = config.PausedDuration ?? 5;
+                        pauseTime.value = config.PausedDuration === null || config.PausedDuration === 0 ? 5 : config.PausedDuration;
+                        nagTime.value = config.NagIntervalMin === null || config.NagIntervalMin === 0 ? 5 : config.NagIntervalMin;
 
                         if (config.ExcludedLibraries !== undefined && config.ExcludedLibraries !== null && config.ExcludedLibraries !== []) {
                             excludedFolders = config.ExcludedLibraries;
@@ -52,6 +64,24 @@
                             msgPause.value = "Video paused too long.";
                         } else {
                             msgPause.value = config.MessageForPausedVideo;
+                        }
+
+                        if (config.MessageForBothNags === null || config.MessageForBothNags === undefined) {
+                            msgBothNags.value = "You are transcoding video & audio.";
+                        } else {
+                            msgBothNags.value = config.MessageForBothNags;
+                        }
+
+                        if (config.MessageForVideoOnlyNags === null || config.MessageForVideoOnlyNags === undefined) {
+                            msgVideoNags.value = "You are transcoding video.";
+                        } else {
+                            msgVideoNags.value = config.MessageForVideoOnlyNags;
+                        }
+
+                        if (config.MessageForAudioOnlyNags === null || config.MessageForAudioOnlyNags === undefined) {
+                            msgAudioNags.value = "You are transcoding audio.";
+                        } else {
+                            msgAudioNags.value = config.MessageForAudioOnlyNags;
                         }
                     });
 
@@ -103,6 +133,42 @@
                         elem.preventDefault();
                         var value = pauseTime.value;
                         SetPausedTime(value);
+                    });
+
+                    chkAudioNag.addEventListener('change', (elem) => {
+                        elem.preventDefault();
+                        var value = chkAudioNag.checked;
+                        EnableAudioNag(value);
+                    });
+
+                    chkVideoNag.addEventListener('change', (elem) => {
+                        elem.preventDefault();
+                        var value = chkVideoNag.checked;
+                        EnableVideoNag(value);
+                    });
+
+                    nagTime.addEventListener('change', (elem) => {
+                        elem.preventDefault();
+                        var value = nagTime.value;
+                        SetNagTime(value);
+                    });
+
+                    msgBothNags.addEventListener('change', (elem) => {
+                        elem.preventDefault();
+                        var value = msgBothNags.value;
+                        SetBothNagsMessage(value);
+                    });
+
+                    msgVideoNags.addEventListener('change', (elem) => {
+                        elem.preventDefault();
+                        var value = msgVideoNags.value;
+                        SetVideoNagsMessage(value);
+                    });
+
+                    msgAudioNags.addEventListener('change', (elem) => {
+                        elem.preventDefault();
+                        var value = msgAudioNags.value;
+                        SetAudioNagsMessage(value);
                     });
 
                     function EnableAudioKilling(value) {
@@ -164,6 +230,54 @@
                     function SetPausedTime(value) {
                         ApiClient.getPluginConfiguration(pluginId).then((config) => {
                             config.PausedDuration = value;
+                            ApiClient.updatePluginConfiguration(pluginId, config).then(() => {
+                            });
+                        });
+                    }
+
+                    function EnableAudioNag(value) {
+                        ApiClient.getPluginConfiguration(pluginId).then((config) => {
+                            config.EnableAudioTranscodeNags = value;
+                            ApiClient.updatePluginConfiguration(pluginId, config).then(() => {
+                            });
+                        });
+                    }
+
+                    function EnableVideoNag(value) {
+                        ApiClient.getPluginConfiguration(pluginId).then((config) => {
+                            config.EnableVideoTranscodeNags = value;
+                            ApiClient.updatePluginConfiguration(pluginId, config).then(() => {
+                            });
+                        });
+                    }
+
+                    function SetNagTime(value) {
+                        ApiClient.getPluginConfiguration(pluginId).then((config) => {
+                            config.NagIntervalMin = value;
+                            ApiClient.updatePluginConfiguration(pluginId, config).then(() => {
+                            });
+                        });
+                    }
+
+                    function SetBothNagsMessage(value) {
+                        ApiClient.getPluginConfiguration(pluginId).then((config) => {
+                            config.MessageForBothNags = value;
+                            ApiClient.updatePluginConfiguration(pluginId, config).then(() => {
+                            });
+                        });
+                    }
+
+                    function SetVideoNagsMessage(value) {
+                        ApiClient.getPluginConfiguration(pluginId).then((config) => {
+                            config.MessageForVideoOnlyNags = value;
+                            ApiClient.updatePluginConfiguration(pluginId, config).then(() => {
+                            });
+                        });
+                    }
+
+                    function SetAudioNagsMessage(value) {
+                        ApiClient.getPluginConfiguration(pluginId).then((config) => {
+                            config.MessageForAudioOnlyNags = value;
                             ApiClient.updatePluginConfiguration(pluginId, config).then(() => {
                             });
                         });

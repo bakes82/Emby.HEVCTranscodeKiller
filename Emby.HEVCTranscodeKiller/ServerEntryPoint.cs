@@ -9,161 +9,206 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Session;
 
-namespace Emby.HEVCTranscodeKiller
+namespace Emby.HEVCTranscodeKiller;
+
+public class ServerEntryPoint : IServerEntryPoint
 {
-    public class ServerEntryPoint : IServerEntryPoint
+    public ServerEntryPoint(ISessionManager sessionManager,
+                            IUserManager userManager,
+                            ILogManager logManager,
+                            IServerConfigurationManager configManager)
     {
-        public ServerEntryPoint(ISessionManager sessionManager,
-                                IUserManager userManager,
-                                ILogManager logManager,
-                                IServerConfigurationManager configManager)
+        SessionManager = sessionManager;
+        UserManager    = userManager;
+        ConfigManager  = configManager;
+        Log            = logManager.GetLogger(Plugin.Instance.Name);
+    }
+
+    private ISessionManager SessionManager { get; }
+
+    private IUserManager UserManager { get; }
+
+    private IServerConfigurationManager ConfigManager { get; }
+
+    private ILogger Log { get; }
+
+    public void Dispose()
+    {
+        SessionManager.PlaybackStart    -= PlaybackStart;
+        SessionManager.PlaybackStopped  -= PlaybackStopped;
+        SessionManager.PlaybackProgress -= PlaybackProgress;
+    }
+
+    public void Run()
+    {
+        SessionManager.PlaybackStart    += PlaybackStart;
+        SessionManager.PlaybackStopped  += PlaybackStopped;
+        SessionManager.PlaybackProgress += PlaybackProgress;
+
+        Plugin.Instance.UpdateConfiguration(Plugin.Instance.Configuration);
+    }
+
+    /// <summary>
+    ///     Executed on a playback started Emby event.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void PlaybackStart(object sender, PlaybackProgressEventArgs e)
+    {
+        if (Plugin.Instance.Configuration.EnableAudioTranscodeNags ||
+            Plugin.Instance.Configuration.EnableVideoTranscodeNags)
+            NagSessionHelper.AddSessionToList(e.Session.Id, Log, true);
+    }
+
+    /// <summary>
+    ///     Executed on a playback progress Emby event.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void PlaybackProgress(object sender, PlaybackProgressEventArgs e)
+    {
+        Log.Info($"In PlaybackProgress - Is Object Pause {e.IsPaused}");
+        if (e.IsPaused && Plugin.Instance.Configuration.EnableKillingOfPausedVideo)
         {
-            SessionManager = sessionManager;
-            UserManager    = userManager;
-            ConfigManager  = configManager;
-            Log            = logManager.GetLogger(Plugin.Instance.Name);
+            PausedSessionHelper.AddSessionToList(e.Session.Id, Log);
+
+            var sessionsToKill = PausedSessionHelper.GetSessionsToKill();
+
+            foreach (var pausedSession in sessionsToKill)
+                StopAndSendMessage(pausedSession.SessionId, Plugin.Instance.Configuration.MessageForPausedVideo);
         }
 
-        private ISessionManager SessionManager { get; }
-
-        private IUserManager UserManager { get; }
-
-        private IServerConfigurationManager ConfigManager { get; }
-
-        private ILogger Log { get; }
-
-        public void Dispose()
+        Log.Info($"Kill Audio: {Plugin.Instance.Configuration.EnableKillingOfAudio}, Kill Video: {Plugin.Instance.Configuration.EnableKillingOfVideo}");
+        if (e.Session.TranscodingInfo != null)
         {
-            SessionManager.PlaybackStart    -= PlaybackStart;
-            SessionManager.PlaybackStopped  -= PlaybackStopped;
-            SessionManager.PlaybackProgress -= PlaybackProgress;
-        }
+            var mediaSourceItem = e.Session.FullNowPlayingItem.GetMediaSources(false, false, new LibraryOptions())
+                                   .SingleOrDefault(x => string.Equals(x.Id, e.MediaSourceId,
+                                                                       StringComparison.OrdinalIgnoreCase));
 
-        public void Run()
-        {
-            SessionManager.PlaybackStart    += PlaybackStart;
-            SessionManager.PlaybackStopped  += PlaybackStopped;
-            SessionManager.PlaybackProgress += PlaybackProgress;
+            if (mediaSourceItem == null) return;
 
-            Plugin.Instance.UpdateConfiguration(Plugin.Instance.Configuration);
-        }
+            if (Plugin.Instance.Configuration.ExcludedLibraries != null &&
+                Plugin.Instance.Configuration.ExcludedLibraries.Any())
+                foreach (var excludedLibrary in Plugin.Instance.Configuration.ExcludedLibraries)
+                    if (mediaSourceItem.Path.ToLower()
+                                       .Contains(excludedLibrary.ToLower()))
+                    {
+                        Log.Info($"File in excluded directory {excludedLibrary} : {mediaSourceItem.Path} ignored killing.");
+                        return;
+                    }
 
-        /// <summary>
-        ///     Executed on a playback started Emby event.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void PlaybackStart(object sender, PlaybackProgressEventArgs e)
-        {
-        }
+            Log.Info($"Is Direct Audio: {e.Session.TranscodingInfo.IsAudioDirect}, Is Direct Video: {e.Session.TranscodingInfo.IsVideoDirect}, Video Codec: {mediaSourceItem.VideoStream.Codec}");
 
-        /// <summary>
-        ///     Executed on a playback progress Emby event.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void PlaybackProgress(object sender, PlaybackProgressEventArgs e)
-        {
-            Log.Info($"In PlaybackProgress - Is Object Pause {e.IsPaused}");
-            if (e.IsPaused && Plugin.Instance.Configuration.EnableKillingOfPausedVideo)
+            if (Plugin.Instance.Configuration.EnableKillingOfAudio &&
+                Plugin.Instance.Configuration.EnableKillingOfVideo && !e.Session.TranscodingInfo.IsAudioDirect &&
+                !e.Session.TranscodingInfo.IsVideoDirect && mediaSourceItem.VideoStream.Codec.ToLower() == "hevc")
             {
-                PausedSessionHelper.AddSessionToList(e.Session.Id, Log);
+                Log.Info("Kill Both");
 
-                var sessionsToKill = PausedSessionHelper.GetSessionsToKill();
+                var msg = string.IsNullOrEmpty(Plugin.Instance.Configuration.MessageForBoth)
+                    ? "Transcoding of video & audio is prohibited."
+                    : Plugin.Instance.Configuration.MessageForBoth;
 
-                foreach (var pausedSession in sessionsToKill)
-                    StopAndSendMessage(pausedSession.SessionId, Plugin.Instance.Configuration.MessageForPausedVideo);
+                StopAndSendMessage(e.Session.Id, msg);
+                return;
             }
 
-            Log.Info($"Kill Audio: {Plugin.Instance.Configuration.EnableKillingOfAudio}, Kill Video: {Plugin.Instance.Configuration.EnableKillingOfVideo}");
-            if (e.Session.TranscodingInfo != null)
+            if (Plugin.Instance.Configuration.EnableKillingOfVideo && !e.Session.TranscodingInfo.IsVideoDirect &&
+                mediaSourceItem.VideoStream.Codec.ToLower() == "hevc")
             {
-                var mediaSourceItem = e.Session.FullNowPlayingItem.GetMediaSources(false, false, new LibraryOptions())
-                                       .SingleOrDefault(x => string.Equals(x.Id, e.MediaSourceId,
-                                                                           StringComparison.OrdinalIgnoreCase));
+                Log.Info("Kill Video");
 
-                if (mediaSourceItem == null) return;
+                var msg = string.IsNullOrEmpty(Plugin.Instance.Configuration.MessageForVideoOnly)
+                    ? "Transcoding of video is prohibited."
+                    : Plugin.Instance.Configuration.MessageForVideoOnly;
 
-                if (Plugin.Instance.Configuration.ExcludedLibraries != null &&
-                    Plugin.Instance.Configuration.ExcludedLibraries.Any())
-                    foreach (var excludedLibrary in Plugin.Instance.Configuration.ExcludedLibraries)
-                        if (mediaSourceItem.Path.ToLower()
-                                           .Contains(excludedLibrary.ToLower()))
-                        {
-                            Log.Info($"File in excluded directory {excludedLibrary} : {mediaSourceItem.Path} ignored killing.");
-                            return;
-                        }
+                StopAndSendMessage(e.Session.Id, msg);
+                return;
+            }
 
-                Log.Info($"Is Direct Audio: {e.Session.TranscodingInfo.IsAudioDirect}, Is Direct Video: {e.Session.TranscodingInfo.IsVideoDirect}, Video Codec: {mediaSourceItem.VideoStream.Codec}");
+            if (Plugin.Instance.Configuration.EnableKillingOfAudio && !e.Session.TranscodingInfo.IsAudioDirect &&
+                mediaSourceItem.VideoStream.Codec.ToLower() == "hevc")
+            {
+                Log.Info("Kill Audio");
 
-                if (Plugin.Instance.Configuration.EnableKillingOfAudio &&
-                    Plugin.Instance.Configuration.EnableKillingOfVideo && !e.Session.TranscodingInfo.IsAudioDirect &&
-                    !e.Session.TranscodingInfo.IsVideoDirect && mediaSourceItem.VideoStream.Codec.ToLower() == "hevc")
-                {
-                    Log.Info("Kill Both");
+                var msg = string.IsNullOrEmpty(Plugin.Instance.Configuration.MessageForAudioOnly)
+                    ? "Transcoding of audio is prohibited."
+                    : Plugin.Instance.Configuration.MessageForAudioOnly;
 
-                    var msg = string.IsNullOrEmpty(Plugin.Instance.Configuration.MessageForBoth)
-                        ? "Transcoding of video & audio is prohibited."
-                        : Plugin.Instance.Configuration.MessageForBoth;
+                StopAndSendMessage(e.Session.Id, msg);
+                return;
+            }
 
-                    StopAndSendMessage(e.Session.Id, msg);
-                    return;
-                }
+            if (Plugin.Instance.Configuration.EnableAudioTranscodeNags ||
+                Plugin.Instance.Configuration.EnableVideoTranscodeNags)
+            {
+                NagSessionHelper.AddSessionToList(e.Session.Id, Log);
 
-                if (Plugin.Instance.Configuration.EnableKillingOfVideo && !e.Session.TranscodingInfo.IsVideoDirect &&
-                    mediaSourceItem.VideoStream.Codec.ToLower() == "hevc")
-                {
-                    Log.Info("Kill Video");
+                var sessionsToNag = NagSessionHelper.GetSessionsToNag();
 
-                    var msg = string.IsNullOrEmpty(Plugin.Instance.Configuration.MessageForVideoOnly)
-                        ? "Transcoding of video is prohibited."
-                        : Plugin.Instance.Configuration.MessageForVideoOnly;
-
-                    StopAndSendMessage(e.Session.Id, msg);
-                    return;
-                }
-
-                if (Plugin.Instance.Configuration.EnableKillingOfAudio && !e.Session.TranscodingInfo.IsAudioDirect &&
-                    mediaSourceItem.VideoStream.Codec.ToLower() == "hevc")
-                {
-                    Log.Info("Kill Audio");
-
-                    var msg = string.IsNullOrEmpty(Plugin.Instance.Configuration.MessageForAudioOnly)
-                        ? "Transcoding of audio is prohibited."
-                        : Plugin.Instance.Configuration.MessageForAudioOnly;
-
-                    StopAndSendMessage(e.Session.Id, msg);
-                }
+                foreach (var nagSession in sessionsToNag) SendNagMessage(nagSession.SessionId);
             }
         }
+    }
 
-        private void StopAndSendMessage(string sessionId, string msg)
-        {
-            SessionManager.SendPlaystateCommand(null, sessionId, new PlaystateRequest
-                                                                 {
-                                                                     Command = PlaystateCommand.Stop,
-                                                                     ControllingUserId = UserManager.Users
-                                                                         .FirstOrDefault(user => user.Policy
-                                                                             .IsAdministrator)
-                                                                         ?.Id.ToString()
-                                                                 }, new CancellationToken());
+    private void SendNagMessage(string sessionId)
+    {
+        var msg = "You are transcoding";
 
-            SessionManager.SendMessageCommand(null, sessionId, new MessageCommand
-                                                               {
-                                                                   Header    = msg,
-                                                                   Text      = msg,
-                                                                   TimeoutMs = 10000
-                                                               }, new CancellationToken());
-        }
+        if (Plugin.Instance.Configuration.EnableAudioTranscodeNags &&
+            Plugin.Instance.Configuration.EnableVideoTranscodeNags)
+            msg = string.IsNullOrEmpty(Plugin.Instance.Configuration.MessageForBothNags)
+                ? "You are transcoding audio and video."
+                : Plugin.Instance.Configuration.MessageForBothNags;
+        else if (Plugin.Instance.Configuration.EnableAudioTranscodeNags &&
+                 !Plugin.Instance.Configuration.EnableVideoTranscodeNags)
+            msg = string.IsNullOrEmpty(Plugin.Instance.Configuration.MessageForAudioOnlyNags)
+                ? "You are transcoding audio."
+                : Plugin.Instance.Configuration.MessageForAudioOnlyNags;
+        else if (!Plugin.Instance.Configuration.EnableAudioTranscodeNags &&
+                 Plugin.Instance.Configuration.EnableVideoTranscodeNags)
+            msg = string.IsNullOrEmpty(Plugin.Instance.Configuration.MessageForVideoOnlyNags)
+                ? "You are transcoding video."
+                : Plugin.Instance.Configuration.MessageForVideoOnlyNags;
 
-        /// <summary>
-        ///     Executed on a playback stopped Emby event.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void PlaybackStopped(object sender, PlaybackStopEventArgs e)
-        {
-            PausedSessionHelper.RemoveSessionFromList(e.Session.Id);
-        }
+        SessionManager.SendMessageCommand(null, sessionId, new MessageCommand
+                                                           {
+                                                               Header    = msg,
+                                                               Text      = msg,
+                                                               TimeoutMs = 10000
+                                                           }, new CancellationToken());
+
+        NagSessionHelper.RemoveSessionFromList(sessionId);
+        NagSessionHelper.AddSessionToList(sessionId, Log);
+    }
+
+    private void StopAndSendMessage(string sessionId, string msg)
+    {
+        SessionManager.SendPlaystateCommand(null, sessionId, new PlaystateRequest
+                                                             {
+                                                                 Command = PlaystateCommand.Stop,
+                                                                 ControllingUserId = UserManager.Users
+                                                                     .FirstOrDefault(user => user.Policy
+                                                                         .IsAdministrator)
+                                                                     ?.Id.ToString()
+                                                             }, new CancellationToken());
+
+        SessionManager.SendMessageCommand(null, sessionId, new MessageCommand
+                                                           {
+                                                               Header    = msg,
+                                                               Text      = msg,
+                                                               TimeoutMs = 10000
+                                                           }, new CancellationToken());
+    }
+
+    /// <summary>
+    ///     Executed on a playback stopped Emby event.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void PlaybackStopped(object sender, PlaybackStopEventArgs e)
+    {
+        PausedSessionHelper.RemoveSessionFromList(e.Session.Id);
+        NagSessionHelper.RemoveSessionFromList(e.Session.Id);
     }
 }

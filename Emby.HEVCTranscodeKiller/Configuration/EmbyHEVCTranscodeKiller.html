@@ -75,6 +75,54 @@
                 </div>
                 <!-- PausedVideo End -->
 
+                <!-- Audio Start -->
+                <div class="inputContainer">
+                    <label class="mdl-switch mdl-js-switch" style="width: auto;">
+                        <input class="chkEnableAudioKilling" data-embytoggle="" id="enableAudioNag" is="emby-toggle"
+                               type="checkbox">
+                        <span class="toggleButtonLabel mdl-switch__label">Enable Transcode Audio Nag</span>
+                        <div class="mdl-switch__trackContainer">
+                            <div class="mdl-switch__track"></div>
+                            <div class="mdl-switch__thumb">
+                                <span class="mdl-switch__focus-helper"></span>
+                            </div>
+                        </div>
+                    </label>
+                    <div class="fieldDescription">
+                        Will popup audio transcode message (Not HEVC Only)
+                    </div>
+                </div>
+                <!-- Audio End -->
+
+                <!-- Video Start -->
+                <div class="inputContainer">
+                    <label class="mdl-switch mdl-js-switch" style="width: auto;">
+                        <input class="chkEnableVideoKilling" data-embytoggle="" id="enableVideoNag" is="emby-toggle"
+                               type="checkbox">
+                        <span class="toggleButtonLabel mdl-switch__label">Enable Transcode Video Nag</span>
+                        <div class="mdl-switch__trackContainer">
+                            <div class="mdl-switch__track"></div>
+                            <div class="mdl-switch__thumb">
+                                <span class="mdl-switch__focus-helper"></span>
+                            </div>
+                        </div>
+                    </label>
+                    <div class="fieldDescription">
+                        Will popup video transcode message (Not HEVC Only)
+                    </div>
+                </div>
+                <!-- Video End -->
+
+                <!-- Nag Start -->
+                <div class="inputContainer">
+                    <input class="txtPausedDuration" data-embyinput="" id="nagMin" is="emby-input"
+                           min="1" type="number">
+                    <div class="fieldDescription">
+                        Nag user of transcode every N minute(s)
+                    </div>
+                </div>
+                <!-- Nag End -->
+
                 <!-- Exclude Folders Start -->
                 <div class="inputContainer">
                     <h3 class="checkboxListLabel">Exclude folders:</h3>
@@ -92,6 +140,16 @@
                 </div>
                 <!-- Message Both End -->
 
+                <!-- Message Both Start -->
+                <div class="inputContainer">
+                    <input class="txtBothMessage" data-embyinput="" id="customBothMessageNags" is="emby-input"
+                           type="text">
+                    <div class="fieldDescription">
+                        Message to be shown when both audio and video nag is enabled.
+                    </div>
+                </div>
+                <!-- Message Both End -->
+
                 <!-- Message Video Only Start -->
                 <div class="inputContainer">
                     <input class="txtVideoMessage" data-embyinput="" id="customVideoMessage" is="emby-input"
@@ -102,12 +160,32 @@
                 </div>
                 <!-- Message Video Only End -->
 
+                <!-- Message Video Only Start -->
+                <div class="inputContainer">
+                    <input class="txtVideoMessage" data-embyinput="" id="customVideoMessageNags" is="emby-input"
+                           type="text">
+                    <div class="fieldDescription">
+                        Message to be shown when only video nag is enabled.
+                    </div>
+                </div>
+                <!-- Message Video Only End -->
+
                 <!-- Message Audio Only Start -->
                 <div class="inputContainer">
                     <input class="txtAudioMessage" data-embyinput="" id="customAudioMessage" is="emby-input"
                            type="text">
                     <div class="fieldDescription">
                         Message to be shown when only audio is disabled.
+                    </div>
+                </div>
+                <!-- Message Audio Only End -->
+
+                <!-- Message Audio Only Start -->
+                <div class="inputContainer">
+                    <input class="txtAudioMessage" data-embyinput="" id="customAudioMessageNags" is="emby-input"
+                           type="text">
+                    <div class="fieldDescription">
+                        Message to be shown when only audio nag is enabled.
                     </div>
                 </div>
                 <!-- Message Audio Only End -->
