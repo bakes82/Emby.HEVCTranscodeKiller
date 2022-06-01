@@ -7,6 +7,8 @@ using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
 
 namespace Emby.HEVCTranscodeKiller;
@@ -58,26 +60,7 @@ public class ServerEntryPoint : IServerEntryPoint
         if (Plugin.Instance.Configuration.EnableAudioTranscodeNags ||
             Plugin.Instance.Configuration.EnableVideoTranscodeNags)
             NagSessionHelper.AddSessionToList(e.Session.Id, Log, true);
-    }
-
-    /// <summary>
-    ///     Executed on a playback progress Emby event.
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
-    private void PlaybackProgress(object sender, PlaybackProgressEventArgs e)
-    {
-        Log.Info($"In PlaybackProgress - Is Object Pause {e.IsPaused}");
-        if (e.IsPaused && Plugin.Instance.Configuration.EnableKillingOfPausedVideo)
-        {
-            PausedSessionHelper.AddSessionToList(e.Session.Id, Log);
-
-            var sessionsToKill = PausedSessionHelper.GetSessionsToKill();
-
-            foreach (var pausedSession in sessionsToKill)
-                StopAndSendMessage(pausedSession.SessionId, Plugin.Instance.Configuration.MessageForPausedVideo);
-        }
-
+        
         Log.Info($"Kill Audio: {Plugin.Instance.Configuration.EnableKillingOfAudio}, Kill Video: {Plugin.Instance.Configuration.EnableKillingOfVideo}");
         if (e.Session.TranscodingInfo != null)
         {
@@ -138,16 +121,35 @@ public class ServerEntryPoint : IServerEntryPoint
                 StopAndSendMessage(e.Session.Id, msg);
                 return;
             }
+        }
+    }
 
-            if (Plugin.Instance.Configuration.EnableAudioTranscodeNags ||
-                Plugin.Instance.Configuration.EnableVideoTranscodeNags)
-            {
-                NagSessionHelper.AddSessionToList(e.Session.Id, Log);
+    /// <summary>
+    ///     Executed on a playback progress Emby event.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void PlaybackProgress(object sender, PlaybackProgressEventArgs e)
+    {
+        Log.Info($"In PlaybackProgress - Is Object Pause {e.IsPaused}");
+        if (e.IsPaused && Plugin.Instance.Configuration.EnableKillingOfPausedVideo)
+        {
+            PausedSessionHelper.AddSessionToList(e.Session.Id, Log);
 
-                var sessionsToNag = NagSessionHelper.GetSessionsToNag();
+            var sessionsToKill = PausedSessionHelper.GetSessionsToKill();
 
-                foreach (var nagSession in sessionsToNag) SendNagMessage(nagSession.SessionId);
-            }
+            foreach (var pausedSession in sessionsToKill)
+                StopAndSendMessage(pausedSession.SessionId, Plugin.Instance.Configuration.MessageForPausedVideo);
+        }
+        
+        if (Plugin.Instance.Configuration.EnableAudioTranscodeNags ||
+            Plugin.Instance.Configuration.EnableVideoTranscodeNags)
+        {
+            NagSessionHelper.AddSessionToList(e.Session.Id, Log);
+
+            var sessionsToNag = NagSessionHelper.GetSessionsToNag();
+
+            foreach (var nagSession in sessionsToNag) SendNagMessage(nagSession.SessionId);
         }
     }
 
@@ -187,9 +189,8 @@ public class ServerEntryPoint : IServerEntryPoint
         SessionManager.SendPlaystateCommand(null, sessionId, new PlaystateRequest
                                                              {
                                                                  Command = PlaystateCommand.Stop,
-                                                                 ControllingUserId = UserManager.Users
-                                                                     .FirstOrDefault(user => user.Policy
-                                                                         .IsAdministrator)
+                                                                 ControllingUserId = UserManager.GetUsers(new UserQuery(){IsAdministrator = true}).Items
+                                                                     .FirstOrDefault()
                                                                      ?.Id.ToString()
                                                              }, new CancellationToken());
 
