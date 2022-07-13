@@ -57,13 +57,13 @@ public class ServerEntryPoint : IServerEntryPoint
     /// <param name="e"></param>
     private void PlaybackStart(object sender, PlaybackProgressEventArgs e)
     {
-        if (Plugin.Instance.Configuration.EnableAudioTranscodeNags ||
-            Plugin.Instance.Configuration.EnableVideoTranscodeNags)
-            NagSessionHelper.AddSessionToList(e.Session.Id, Log, true);
-        
         Log.Info($"Kill Audio: {Plugin.Instance.Configuration.EnableKillingOfAudio}, Kill Video: {Plugin.Instance.Configuration.EnableKillingOfVideo}");
         if (e.Session.TranscodingInfo != null)
         {
+            if (Plugin.Instance.Configuration.EnableAudioTranscodeNags && e.Session.TranscodingInfo.IsAudioDirect == false||
+                Plugin.Instance.Configuration.EnableVideoTranscodeNags && e.Session.TranscodingInfo.IsVideoDirect == false)
+                NagSessionHelper.AddSessionToList(e.Session.Id, Log, true);
+            
             var mediaSourceItem = e.Session.FullNowPlayingItem.GetMediaSources(false, false, new LibraryOptions())
                                    .SingleOrDefault(x => string.Equals(x.Id, e.MediaSourceId,
                                                                        StringComparison.OrdinalIgnoreCase));
